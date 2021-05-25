@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 # Copyright 2021 The Kubermatic Kubernetes Platform contributors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,10 +12,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -euo pipefail
+FROM alpine:3.13
+ARG VERSION
+ARG ARCH
+LABEL maintainer="support@kubermatic.com"
 
-cd $(dirname $0)/..
+RUN echo "version: $VERSION"
+RUN apk add -U \
+	bash \
+	ca-certificates \
+	curl \
+	iptables \
+	jq \
+	openssl \
+	openvpn=${VERSION} \
+	--no-cache
 
-boilerplate \
-  -boilerplates hack/boilerplate/ \
-  .
+# add kubectl
+RUN curl \
+	-o /usr/bin/kubectl \
+	-L "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/${ARCH}/kubectl"
+RUN chmod 0755 /usr/bin/kubectl

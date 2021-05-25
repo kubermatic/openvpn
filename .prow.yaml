@@ -1,4 +1,4 @@
-# Copyright 2020 The XXX Authors.
+# Copyright 2021 The Kubermatic Kubernetes Platform contributors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,17 +12,40 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# presubmits:
-#   - name: pre-PROJECT-verify-boilerplate
-#     always_run: true
-#     decorate: true
-#     clone_uri: "ssh://git@github.com/OWNER/PROJECT.git"
-#     spec:
-#       containers:
-#         - image: quay.io/kubermatic-labs/boilerplate:v0.1.1
-#           command:
-#             - ./hack/verify-boilerplate.sh
-#           resources:
-#             requests:
-#               cpu: 200m
-#               memory: 256Mi
+presubmits:
+  - name: pre-kubermatic-openvpn-verify-boilerplate
+    always_run: true
+    decorate: true
+    clone_uri: "ssh://git@github.com/kubermatic/openvpn.git"
+    spec:
+      containers:
+        - image: quay.io/kubermatic-labs/boilerplate:v0.1.1
+          command:
+            - ./hack/verify-boilerplate.sh
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+
+  - name: pre-kubermatic-openvpn-test-building-v2.5
+    run_if_changed: "^(hack|v2.5)/"
+    decorate: true
+    clone_uri: "ssh://git@github.com/kubermatic/openvpn.git"
+    spec:
+      containers:
+        - image: quay.io/containers/buildah:v1.20.1
+          command:
+            - ./hack/ci/build-images.sh
+          env:
+            - name: DRY_RUN
+              value: superdry
+            - name: MINOR_VERSION
+              value: v2.5
+          # docker-in-docker needs privileged mode
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 2
+              memory: 3Gi
+
